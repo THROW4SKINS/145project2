@@ -3,6 +3,14 @@ def calcfreqs(infile, nqs, maxrat):
     f = open(infile, "r") #Open file
     f_list = f.read()
     f_list = f_list.split('\n')
+    for x in xrange(0, len(f_list)):
+        f_string = ','.join(f_list[x].split(' '))  # Change the format to a 5,5,5,NA
+        curr_nqs = len(f_string.split(','))
+        if curr_nqs == nqs:
+            if not 'NA' in f_string:
+                freq_dict.update({f_string: 0})
+        else:
+            continue
     for x in xrange(0,len(f_list)):
     	f_string = ','.join(f_list[x].split(' ')) #Change the format to a 5,5,5,NA
     	dict_keys = freq_dict.keys()
@@ -20,8 +28,9 @@ def calcfreqs(infile, nqs, maxrat):
 
 
 def highfreqs(freqs, k):
-    filter(lambda: freqs.values() < k,freqs)
-    return freqs
+    return dict(((d, v) for (d, v) in freqs.iteritems() if v >= k))
 
 test = calcfreqs('y',3,5)
+test2 = highfreqs(test,2)
 print(test)
+print(test2)
