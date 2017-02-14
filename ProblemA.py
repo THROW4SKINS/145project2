@@ -8,7 +8,7 @@ def calcfreqs(infile, nqs, maxrat):
     	dict_keys = freq_dict.keys()
     	if 'NA' in f_string: #If the line has an NA
     		counter = f_string.count('NA')
-    		fixed_f = ''.join(t3.split('NA'))
+    		fixed_f = ''.join(f_string.split('NA'))
     		for y in xrange(0,len(dict_keys)): 
     			if fixed_f in dict_keys[y]:
     				freq_dict[dict_keys[y]] += float(counter)/nqs
