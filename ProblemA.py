@@ -19,4 +19,8 @@ def calcfreqs(infile, nqs, maxrat):
 
 
 def highfreqs(freqs, k):
-    print 'hello'
+    filter(lambda: freqs.values() < k,freqs)
+    return freqs
+
+test = calcfreqs('y',3,5)
+print(test)
