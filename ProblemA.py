@@ -11,11 +11,12 @@ def calcfreqs(infile, nqs, maxrat):
     		fixed_f = ''.join(f_string.split('NA'))
     		for y in xrange(0,len(dict_keys)): 
     			if fixed_f in dict_keys[y]:
-    				freq_dict[dict_keys[y]] += float(counter)/nqs
+    				freq_dict[dict_keys[y]] += float(nqs-counter)/nqs
     	elif f_string in dict_keys: #If the line does not have an NA
     		freq_dict[f_string] += 1 
     	else: #If the line does not exist in the dictionary, aka new response
     		freq_dict.update({f_string: 1})
+    return freq_dict
 
 
 def highfreqs(freqs, k):
