@@ -29,16 +29,11 @@ OLD calcfreqs function DOES NOT WORk
     return freq_dict"""
 
 def calcfreqs(infile, nqs, maxrat):
-	global freq_dict #Our global dictionary to contain all the frequencies
+	global freq_dict    #Our global dictionary to contain all the frequencies
 	freq_dict = {}
-	f = open(infile, "r") #Open file
-	if f_list[-1] == '': #In case there's a \n at the end we created an empty element at the end of the list
-		del f_list[-1]
-	f_list = f.read()
-	f_list = f_list.split('\n') #Since the answers are split by a new line, we will use split to change it into a list. Each element in the list is a row of answers, in a string format
-	for w in xrange(0,len(f_list)): #Found out my test file have \r cause window is stupid. We will implement this to make sure \r are gone
-		f_list[w] = f_list[w].replace('\r', '')
-	NA_list = [] #We will create an empty list to contain all the NA rows. This will make it easier to add nonintact to intact data
+        f_list = readFile(infile)
+	NA_list = []        #We will create an empty list to contain all the NA rows. 
+                            #This will make it easier to add nonintact to intact data
 	for x in xrange(0, len(f_list)): #Loop through all the elements in the list. Which is the rows of answers
 		f_row = f_list[x].split(' ')
 		f_string = ','.join(f_row)
@@ -57,6 +52,26 @@ def calcfreqs(infile, nqs, maxrat):
 				freq_dict[z] += float(nqs-counter)/nqs #Add in the fraction of the frequency.
 	return freq_dict
 
+def readFile(inf):
+	f = open(inf, "r") #Open file
+	f_list = f.read()
+	f_list = f_list.split('\n') #Since the answers are split by a new line, 
+                                    #we will use split to change it into a list. 
+                                    #Each element in the list is a row of answers, 
+                                    #in a string format
+
+	for w in xrange(0,len(f_list)): 
+                #Found out my test file have \r cause window is stupid.
+                #We will implement this to make sure \r are gone
+		f_list[w] = f_list[w].replace('\r', '')
+
+        while f_list[-1] == '':
+            del f_list[-1]
+            #get rid of any blank rows at the end created by split()
+
+        return f_list
+
+
 def format_check(inline, nqs, maxrat):
 	if len(inline) != nqs: #Check for lengh of answers compared to nqs
 		raise Exception('Number of answers in file does not equal to the number of questions in the survey')
@@ -64,8 +79,12 @@ def format_check(inline, nqs, maxrat):
 		if inline[i] == 'NA':
 			continue
 		#Need to implement unknown string tester
-		#elif type(inline[i]) == str:
-		#	raise Exception('Unknown string found in file')
+		elif inline[i].isalpha():
+			raise Exception('Unknown string found in file')
+
+                elif inline[i] == '':
+                    raise Exception('Empty or missing entry')
+
 		elif int(inline[i]) > maxrat:
 			raise Exception('Choice of responses exceeds maxrat')
 
