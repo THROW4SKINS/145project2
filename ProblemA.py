@@ -32,6 +32,8 @@ def calcfreqs(infile, nqs, maxrat):
 	global freq_dict #Our global dictionary to contain all the frequencies
 	freq_dict = {}
 	f = open(infile, "r") #Open file
+	if f_list[-1] == '': #In case there's a \n at the end we created an empty element at the end of the list
+		del f_list[-1]
 	f_list = f.read()
 	f_list = f_list.split('\n') #Since the answers are split by a new line, we will use split to change it into a list. Each element in the list is a row of answers, in a string format
 	for w in xrange(0,len(f_list)): #Found out my test file have \r cause window is stupid. We will implement this to make sure \r are gone
