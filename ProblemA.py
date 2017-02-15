@@ -1,4 +1,6 @@
-"""def calcfreqs(infile, nqs, maxrat):
+"""
+OLD calcfreqs function DOES NOT WORk
+    def calcfreqs(infile, nqs, maxrat): 
     freq_dict = {} #Main dictionary to contain all the frequencies 
     f = open(infile, "r") #Open file
     f_list = f.read()
