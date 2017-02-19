@@ -1,41 +1,44 @@
 import threading
-import os
 import math
 
-class thrd(threading.Thread):
-    thread_id = 0
-    outp = []
-    #thread id just for testing purposes, outp is final output
-    def __init__(self, filename, start, end):
-        threading.Thread.__init__(self)
-        self.tid = thrd.thread_id
-        thrd.thread_id += 1
-        self.fn = filename          #file to be worked on
-        self.strt = start           #start of work location in bytes
-        self.stop = end             #end of work location in bytes
-
-    def announce(self):
-        print 'Thread %d reporting for duty \n' %self.tid
-        #more test stuff
-
-    def run():
-        self.fn.seek(self.strt)
-
-        #start working slaves.
-
 def linelengths(filenm, ntrh):
-    #outp = []
+    global length_list
+    length_list = []
     begin = 0
-    #keep track of head of file to be passed to thrd instances
-
-    f = open(filenm)
-    fsize = os.path.getsize(f)
-    chunks = math.ceil(fsize / ntrh)
-    #divvy up the file evenly (approx)
+    f = open(filenm,"r")
+    fstring = f.read()
+    if fstring[-1] == '\n':
+        fsize = len(fstring)
+    else:
+        fsize = len(fstring) + 1
+    chunk_size = math.ceil(fsize / ntrh)
+    chunk_size = int(chunk_size)
+    threads = []
 
     for i in range(ntrh):
-        #start making slave--er i mean threads
-        t = thrd(f, begin, i*chunks)
-        begin += chunks         #increment before t.run() so no problem (?)
-        t.announce()
-        t.run()
+        t = threading.Thread(target=string_length,args=(fstring, begin, chunk_size))
+        t.start()
+        threads.append(t)
+        begin += chunk_size
+    for thread in threads:
+        thread.join()
+    print("===============" )
+    print(length_list)
+    return length_list
+
+def string_length(f_string, begin, chunk_size):
+    cur_length_list = []
+    chunk = f_string[begin:begin + chunk_size]
+    line_list = chunk.split('\n')
+    for i in range(len(line_list)):
+        size = len(line_list[i])
+        cur_length_list.append(size)
+    print(cur_length_list)
+    for j in range(len(cur_length_list)):
+        if len(length_list) != 0 and j == 0:
+            length_list[-1] += cur_length_list[0]
+        else:
+            length_list.append(cur_length_list[j])
+
+test = linelengths('z',2)
+print(test)
