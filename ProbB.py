@@ -14,19 +14,27 @@ def linelengths(filenm, ntrh):
     chunk_size = math.ceil(fsize / ntrh)
     chunk_size = int(chunk_size)
     threads = []
-
+    list_array = []
     for i in range(ntrh):
-        t = threading.Thread(target=string_length,args=(fstring, begin, chunk_size))
-        t.start()
+        t = threading.Thread(target=string_length,args=(fstring, begin, chunk_size, list_array))
         threads.append(t)
         begin += chunk_size
     for thread in threads:
-        thread.join()
+        thread.start()
+    for thread in threads:
+        if thread.isAlive():
+            thread.join()
+    for cur_length_list in list_array:
+        for j in range(len(cur_length_list)):
+            if len(length_list) != 0 and j == 0:
+                length_list[-1] += cur_length_list[0]
+            else:
+                length_list.append(cur_length_list[j])
     print("===============" )
     print(length_list)
     return length_list
 
-def string_length(f_string, begin, chunk_size):
+def string_length(f_string, begin, chunk_size, list_array):
     cur_length_list = []
     chunk = f_string[begin:begin + chunk_size]
     line_list = chunk.split('\n')
@@ -34,11 +42,8 @@ def string_length(f_string, begin, chunk_size):
         size = len(line_list[i])
         cur_length_list.append(size)
     print(cur_length_list)
-    for j in range(len(cur_length_list)):
-        if len(length_list) != 0 and j == 0:
-            length_list[-1] += cur_length_list[0]
-        else:
-            length_list.append(cur_length_list[j])
+    list_array.append(cur_length_list)
+
 
 test = linelengths('z',2)
 print(test)
