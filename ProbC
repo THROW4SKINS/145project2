@@ -30,7 +30,7 @@ class customer:
                 customer.immedServe += 1
                 #if we have available stock, no need to wait
 
-            customer.waitTime += env.now() - self.simStartTime   
+            customer.waitTime += env.now - self.simStartTime   
             #otherwise, update wait time
 
     def restock(self, env):
