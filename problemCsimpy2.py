@@ -8,17 +8,23 @@ from random import seed
 class G:  # globals
    # inventory = Resource(0)
    stock = Level()
+   alphac = 0.0
+   betac = 0.0
+   alphai = 0.0
+   betai =0.0
 
 class Inventory(Process):
 
-    def Run(self,a,b):
+    def Run(self):
         # simulate item arrival
         while 1:
-            invArrive = random.gammavariate(a, b)
-            delivery = 1
-            yield put,self,G.stock,delivery
             # print G.stock.amount
-            yield hold, self, invArrive
+            TBA = random.gammavariate(G.alphai, G.betai)
+            yield put,self,G.stock,1
+            yield hold,self,TBA
+
+            # print G.stock.amount
+
 
 
 
@@ -31,50 +37,52 @@ class customer(Process):
     immedServe = 0  # num customers served immediately
     custID = 0  # for immedServe and testing
     simStartTime = 0.0
-    def __init__(self):
-        Process.__init__(self)
-
-        self.ID = customer.custID
-        # customer.custID += 1
-
 
     def Run(self):
         # simulates customer arrival + purchase item
-        while 1:
             customer.simStartTime = now()
             customer.custID += 1
             if (G.stock.amount >= 1):
                 customer.immedServe += 1
-                yield get, self, G.stock,1
-            else:
-                t1 = now()
-                yield get,self,G.stock,1  # attempt to purchase
-                customer.waitTime += now() - customer.simStartTime
+            yield get,self,G.stock,1  # attempt to purchase
+            customer.waitTime += now() - customer.simStartTime
 
 class Source(Process):
     """ Source generates customers regularly """
 
-    def generate(self, TBA):
+    def generate(self):
+        while 1:
+            TBA = random.gammavariate(G.alphac, G.betac)
             c = customer()
             activate(c, c.Run())
             yield hold, self, TBA
 
+# class GI(Process):
+#     def generate(self):
+#             TBA = random.gammavariate(G.alphai, G.betai)
+#             c = Inventory()
+#             activate(c, c.Run())
+#             yield hold, self, TBA
+
                     ## Model/Experiment ------------------------------
 def storesim(maxsimtime, alphac, betac, alphai, betai):
     seed(12345)
+    G.alphac = alphac
+    G.betac = betac
+    G.alphai = alphai
+    G.betai = betai
     initialize()
     s = Source()
-    ARRint = random.gammavariate(alphac, betac)
-    activate(s, s.generate(TBA=ARRint))
-    I = Inventory()
-    activate(I, I.Run(alphai,betai))
+    i = Inventory()
+    activate(s, s.generate())
+    activate(i, i.Run())
     simulate(until=maxsimtime)
-    print 'total order created:', customer.custID
+    print 'total number of order:', customer.custID
     print 'total waiting time: ', customer.waitTime
     print 'number of order filled up immediately: ',customer.immedServe
     print 'mean wait time: ', (customer.waitTime / customer.custID)
-    # print (float(customer.immedServe / customer.custID))
+    print 'proportion of orders served immediately', (float(customer.immedServe)/customer.custID)
+
+
 
 storesim(10000,2,2.2,2,2)
-
-#result is wrong, I am trying to fix it
