@@ -2,24 +2,24 @@ from SimPy.Simulation import *
 from random import seed
 # Two discrete events are running at the same time
 # inventory = Resource(1) modeled the number of items in inventory
-# DES(stock) is used to simulate the deliveries of new inventory
+# DES(Inventory) is used to simulate the deliveries of new inventory
 # DES(customer) is used to simulate the arrival and purchase of customer
 
 class G:  # globals
-   inventory = Resource(1)
+   # inventory = Resource(0)
+   stock = Level()
 
-class stock(Process):
-    def __init__(self):
-        Process.__init__(self)
+class Inventory(Process):
 
     def Run(self,a,b):
         # simulate item arrival
         while 1:
             invArrive = random.gammavariate(a, b)
+            delivery = 1
+            yield put,self,G.stock,delivery
+            # print G.stock.amount
             yield hold, self, invArrive
-            yield request, self, G.inventory
-            G.inventory.n += 1
-            yield release, self, G.inventory
+
 
 
 class customer(Process):
@@ -30,55 +30,51 @@ class customer(Process):
     waitTime = 0.0  # total wait time for all customers
     immedServe = 0  # num customers served immediately
     custID = 0  # for immedServe and testing
-
+    simStartTime = 0.0
     def __init__(self):
         Process.__init__(self)
-        self.simStartTime = 0.0
+
         self.ID = customer.custID
-        customer.custID += 1
+        # customer.custID += 1
 
 
-    def Run(self,a,b):
+    def Run(self):
         # simulates customer arrival + purchase item
         while 1:
-            if (G.inventory.n > 0):
+            customer.simStartTime = now()
+            customer.custID += 1
+            if (G.stock.amount >= 1):
                 customer.immedServe += 1
-                # if we have available stock, no need to wait
-            yield request,self,G.inventory  # attempt to purchase
-            G.inventory.n -= 1              # purchase finished, decrease inventory
-            custArrive = random.gammavariate(a,b) # inter-arrival time for next customer
-            customer.custID += 1  # keep track of num customers in one sim
+                yield get, self, G.stock,1
+            else:
+                t1 = now()
+                yield get,self,G.stock,1  # attempt to purchase
+                customer.waitTime += now() - customer.simStartTime
 
-            yield hold,self,custArrive
+class Source(Process):
+    """ Source generates customers regularly """
 
-            customer.waitTime += now() - self.simStartTime
-            yield release,self,G.inventory
+    def generate(self, TBA):
+            c = customer()
+            activate(c, c.Run())
+            yield hold, self, TBA
 
-#
-# class Source(Process):
-#     def generate(self, number, a,b):
-#         for i in range(number):
-#             C = customer()
-#             activate(C, C.Run(a,b))
-#             t = random.gammavariate(a, b)
-#             yield hold, self, t
-#
-#
-# ## Experiment data -------------------------
-#
-# maxNumber = 1
-
-
-## Model/Experiment ------------------------------
+                    ## Model/Experiment ------------------------------
 def storesim(maxsimtime, alphac, betac, alphai, betai):
     seed(12345)
     initialize()
-    C = customer()
-    activate(C, C.Run(alphac,betac))
-    I = stock()
+    s = Source()
+    ARRint = random.gammavariate(alphac, betac)
+    activate(s, s.generate(TBA=ARRint))
+    I = Inventory()
     activate(I, I.Run(alphai,betai))
     simulate(until=maxsimtime)
-    print (customer.waitTime / customer.custID)
+    print 'total order created:', customer.custID
+    print 'total waiting time: ', customer.waitTime
+    print 'number of order filled up immediately: ',customer.immedServe
+    print 'mean wait time: ', (customer.waitTime / customer.custID)
+    # print (float(customer.immedServe / customer.custID))
 
 storesim(10000,2,2.2,2,2)
 
+#result is wrong, I am trying to fix it
